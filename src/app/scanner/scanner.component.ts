@@ -1,10 +1,11 @@
-import { Component } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { AppComponent } from '../app.component';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
 import { ChartData } from 'chart.js';
-
+import lottie from 'lottie-web';
+import { AnimationOptions } from 'ngx-lottie';
 @Component({
   selector: 'app-scanner',
   templateUrl: './scanner.component.html',
@@ -20,9 +21,35 @@ export class ScannerComponent {
   currentPage: number = 1;
   pageSize: number = 15;
   totalPages: number = 1;
-  vulnerabilityChartData:any[]=[];
-colorScheme:any;
+  vulnerabilityChartData: any[] = [];
+  colorScheme: any;
+  animationData: any; @ViewChild('animationContainer', { static: false }) animationContainer!: ElementRef;
+  options: AnimationOptions = {
+    path: 'assets/annimation.json', // download the JSON version of animation in your project directory and add the path to it like ./assets/animations/example.json
+  };
+
+  loadAnimation() {
+    lottie.loadAnimation({
+      container: this.animationContainer.nativeElement,
+      renderer: 'svg',
+      loop: true,
+      autoplay: true,
+      path: 'assets/annimation.json'
+    });
+    console.log('loaded');
+
+  }
   constructor(private http: HttpClient, private app: AppComponent) { }
+
+  // loadAnimation() {
+  //   const animation = lottie.loadAnimation({
+  //     container: this.animationContainer.nativeElement, // The DOM element to contain the animation
+  //     renderer: 'svg', // Use 'svg', 'canvas', or 'html' depending on the format of your animation
+  //     loop: true,
+  //     autoplay: true,
+  //     path: 'assets/binoculars.gif' // Path to your animation JSON file
+  //   });
+  // }
   updateChartData() {
     const totalUrls = this.scanResults?.['Total Crawled URLs (Database A)'] || 1;
     const vulnerableUrls = this.scanResults?.InvalidWebsites.length || 0;
@@ -33,8 +60,8 @@ colorScheme:any;
       { name: 'Vulnerable URLs', value: vulnerableUrls },
       { name: 'Safe URLs', value: safeUrls }
     ];
-   this.colorScheme = {
-      domain: ['#dc3545','#28a745'] // Green for Safe URLs, Red for Vulnerable URLs
+    this.colorScheme = {
+      domain: ['#dc3545', '#28a745'] // Green for Safe URLs, Red for Vulnerable URLs
     };
   }
   onSubmit(event: Event) {
@@ -42,7 +69,7 @@ colorScheme:any;
     this.invalid = false;
     this.scanResults = null;
     event.preventDefault(); // Prevents default form submission
-
+    this.loadAnimation();
     if (this.targetUrl) {
       this.isLoading = true;
       this.scanStatus = 'Scanning is in process...';
