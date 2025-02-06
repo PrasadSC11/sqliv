@@ -1,0 +1,15 @@
+.pagination-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 10px;
+}
+
+.pagination-container button {
+    font-size: 18px;
+    padding: 8px;
+}
+
+.pagination-container span {
+    margin: 0 10px;
+}

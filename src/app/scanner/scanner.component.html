@@ -1,0 +1,121 @@
+<div class="container">
+    <h1>SQL Injection Vulnerability Scanner</h1>
+
+    <form (submit)="onSubmit($event)">
+        <div class="form-group">
+            <label for="targetUrl">Enter the Target URL:</label>
+            <input type="url" id="targetUrl" class="form-control" [(ngModel)]="targetUrl" name="targetUrl"
+                placeholder="https://example.com" required />
+        </div>
+        <button type="submit" class="btn btn-primary" [disabled]="!targetUrl || isLoading">
+            Start Scan
+        </button>
+    </form>
+
+    <h3 *ngIf="invalid" style="color: red;">Invalid URL</h3>
+
+    <!-- Scanning Status Messages -->
+    <div *ngIf="scanStatus" class="col-md-6 text-center mt-4">
+        <p [ngClass]="{
+            'text-success': scanStatus === 'Scanning started...' || scanStatus === 'Scan completed!',
+            'text-warning': scanStatus === 'Scanning is about to finish...'
+        }">
+            <strong>{{ scanStatus }}</strong>
+        </p>
+    </div>
+
+    <!-- Results Section -->
+    <div *ngIf="scanResults && !isLoading" class="row mt-4">
+        <!-- Left Column: Scan Results Table -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Scan Results</h3>
+                </div>
+                <div class="card-body">
+                    <table class="table table-bordered">
+                        <thead>
+                            <tr>
+                                <th>Category</th>
+                                <th>Count</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Total Crawled URLs (Database A)</td>
+                                <td>{{ scanResults?.['Total Crawled URLs (Database A)'] }}</td>
+                            </tr>
+                            <tr>
+                                <td>Total Filtered URLs (Database B)</td>
+                                <td>{{ scanResults?.['Total Filtered URLs (Database B)'] }}</td>
+                            </tr>
+                            <tr>
+                                <td>Error-based attack responses (D)</td>
+                                <td>{{ scanResults?.['Error-based attack detected (D)'] }}</td>
+                            </tr>
+                            <tr>
+                                <td>Valid/Invalid SQLIA responses (E)</td>
+                                <td>{{ scanResults?.['Valid/Invalid SQLIA detected (E)'] }}</td>
+                            </tr>
+                            <tr>
+                                <td>Tautology attack responses (G)</td>
+                                <td>{{ scanResults?.['Tautology attack detected (G)'] }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <button class="btn btn-success mt-3" (click)="exportToExcel()">
+                        Export Safe URLs to Excel
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right Column: Card Container for Vulnerability Pie Chart -->
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">Vulnerability Analysis</h3>
+                </div>
+                <div class="card-body text-center">
+                    <ngx-charts-pie-chart [view]="[600, 300]" [results]="vulnerabilityChartData" [doughnut]="true"
+                        [gradient]="true" [legend]="true" [scheme]="colorScheme">
+                    </ngx-charts-pie-chart>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Invalid Websites Section -->
+    <div *ngIf="scanResults && !isLoading" class="row mt-4">
+        <div class="col-md-12">
+            <h3>Invalid Websites</h3>
+            <table class="table table-bordered">
+                <thead>
+                    <tr>
+                        <th>URL</th>
+                        <th>SQLIV Type</th>
+                        <th>Remarks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr *ngFor="let invalid of getCurrentPageData()">
+                        <td>{{ invalid.URL }}</td>
+                        <td>{{ invalid.Type }}</td>
+                        <td>{{ invalid.Remarks }}</td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Pagination Controls with Icons -->
+            <div *ngIf="scanResults?.InvalidWebsites.length > pageSize" class="pagination-container">
+                <button class="btn btn-secondary" (click)="previousPage()" [disabled]="currentPage === 1">
+                    <i class="fa fa-chevron-left"></i>
+                </button>
+                <span>Page {{ currentPage }} of {{ totalPages }}</span>
+                <button class="btn btn-secondary" (click)="nextPage()" [disabled]="currentPage === totalPages">
+                    <i class="fa fa-chevron-right"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
