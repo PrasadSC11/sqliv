@@ -3,13 +3,14 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { AppComponent } from '../app.component';
 import * as XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
-import { ChartData } from 'chart.js';
-import lottie from 'lottie-web';
 import { AnimationOptions } from 'ngx-lottie';
+import lottie from 'lottie-web';
+
 @Component({
   selector: 'app-scanner',
   templateUrl: './scanner.component.html',
-  styleUrls: ['./scanner.component.css']
+  styleUrls: ['./scanner.component.css'],
+  standalone: false
 })
 export class ScannerComponent {
   targetUrl: string = '';
@@ -23,10 +24,14 @@ export class ScannerComponent {
   totalPages: number = 1;
   vulnerabilityChartData: any[] = [];
   colorScheme: any;
-  animationData: any; @ViewChild('animationContainer', { static: false }) animationContainer!: ElementRef;
+  animationData: any;
+  @ViewChild('animationContainer', { static: false }) animationContainer!: ElementRef;
+
   options: AnimationOptions = {
-    path: 'assets/annimation.json', // download the JSON version of animation in your project directory and add the path to it like ./assets/animations/example.json
+    path: 'assets/annimation.json',
   };
+
+  constructor(private http: HttpClient, private app: AppComponent) { }
 
   loadAnimation() {
     lottie.loadAnimation({
@@ -36,65 +41,40 @@ export class ScannerComponent {
       autoplay: true,
       path: 'assets/annimation.json'
     });
-    console.log('loaded');
-
   }
-  constructor(private http: HttpClient, private app: AppComponent) { }
 
-  // loadAnimation() {
-  //   const animation = lottie.loadAnimation({
-  //     container: this.animationContainer.nativeElement, // The DOM element to contain the animation
-  //     renderer: 'svg', // Use 'svg', 'canvas', or 'html' depending on the format of your animation
-  //     loop: true,
-  //     autoplay: true,
-  //     path: 'assets/binoculars.gif' // Path to your animation JSON file
-  //   });
-  // }
-  updateChartData() {
-    const totalUrls = this.scanResults?.['Total Crawled URLs (Database A)'] || 1;
-    const vulnerableUrls = this.scanResults?.InvalidWebsites.length || 0;
-    const safeUrls = totalUrls - vulnerableUrls;
-
-    // Update chart values
-    this.vulnerabilityChartData = [
-      { name: 'Vulnerable URLs', value: vulnerableUrls },
-      { name: 'Safe URLs', value: safeUrls }
-    ];
-    this.colorScheme = {
-      domain: ['#dc3545', '#28a745'] // Green for Safe URLs, Red for Vulnerable URLs
-    };
-  }
   onSubmit(event: Event) {
     this.scanStatus = 'Scanning started...';
     this.invalid = false;
     this.scanResults = null;
-    event.preventDefault(); // Prevents default form submission
-    this.loadAnimation();
+    event.preventDefault();
+
     if (this.targetUrl) {
       this.isLoading = true;
       this.scanStatus = 'Scanning is in process...';
 
-      const apiUrl = `${this.app.baseUrl}`; // Ensure API URL is correct
+      const apiUrl = `${this.app.baseUrl}`;
       const params = new HttpParams().set('url', this.targetUrl);
 
-      // Send GET request
       this.http.get(apiUrl, { params }).subscribe({
         next: (data) => {
+          console.log(data);
           if (!data) {
             this.invalid = true;
-            this.scanStatus = ''; // Reset status
+            this.scanStatus = '';
             this.isLoading = false;
             return;
           }
 
           this.scanResults = {
             InvalidWebsites: this.prepareInvalidResults(data),
-            ...data // Merging with the existing results
+            ...data
           };
+
           this.prepareValidResults(data);
           this.updateChartData();
           this.totalPages = Math.ceil(this.scanResults.InvalidWebsites.length / this.pageSize);
-          this.scanStatus = 'Scan completed!'; // Final status
+          this.scanStatus = 'Scan completed!';
           this.isLoading = false;
         },
         error: (err) => {
@@ -109,61 +89,91 @@ export class ScannerComponent {
     }
   }
 
-  // Prepare invalid results for the result
   prepareInvalidResults(data: any) {
     const invalidResults = data?.['Invalid Websites'] || [];
-    return invalidResults.map((invalid: any) => ({
-      URL: invalid.URL,
-      Type: invalid.Type,
-      Remarks: invalid.Remarks
-    }));
+    const educationalResults = data?.['Educational Websites'] || [];
+    const educationalResultsCount = data?.['Educational URLs Found'] || [];
+    return [
+      ...invalidResults.map((invalid: any) => ({
+        URL: invalid.URL,
+        Type: invalid.Type,
+        Remarks: invalid.Remarks
+      })),
+      ...educationalResults.map((edu: any) => ({
+        URL: edu,
+        Type: 'Educational Website',
+        Remarks: 'Educational Websites may have sql injection'
+      }))
+    ];
   }
+
   prepareValidResults(data: any) {
     this.safeUrls = (data?.['Valid Websites'] || []);
+    console.log(this.safeUrls);
+    
   }
+
+  updateChartData() {
+    const totalUrls = this.scanResults?.['Total Crawled URLs (Database A)'] || 1;
+    const vulnerableUrls = this.scanResults?.InvalidWebsites.length || 0;
+    const educationalUrls = this.scanResults?.['Educational Websites']?.length || 0;
+    const safeUrls = totalUrls - (vulnerableUrls + educationalUrls);
+    console.log(educationalUrls);
+    console.log(vulnerableUrls);
+    
+    if (educationalUrls != 0) {
+      console.log("in if");
+      this.vulnerabilityChartData = [
+        { name: 'Educational Websites', value: educationalUrls },
+        { name: 'Safe URLs', value: safeUrls }
+      ];
+    }
+    else {
+      console.log("in else");
+      
+      this.vulnerabilityChartData = [
+        { name: 'Vulnerable URLs', value: vulnerableUrls },
+        { name: 'Safe URLs', value: safeUrls }
+      ];
+    }
+    this.colorScheme = {
+      domain: ['#dc3545', '#28a745']
+    };
+  }
+
   exportToExcel() {
     if (!this.safeUrls || this.safeUrls.length === 0) {
       alert("No safe URLs to export!");
       return;
     }
 
-    // Format data to have Index and URL only
     const formattedData = this.safeUrls.map((url, index) => ({
       Sr_No: index + 1,
-      URL: url  // If `this.safeUrls` contains objects, use `url.URL`
+      URL: url
     }));
 
-    // Create a new worksheet
     const worksheet = XLSX.utils.json_to_sheet(formattedData);
-
-    // Create a new workbook and append the worksheet
     const workbook = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(workbook, worksheet, 'SafeURLs');
 
-    // Write the workbook to an Excel file
     const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' });
     const data = new Blob([excelBuffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
 
-    // Save the file using file-saver
     saveAs(data, 'SafeURLs.xlsx');
   }
 
-
-  // Get data for the current page
   getCurrentPageData() {
     const startIndex = (this.currentPage - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
     return this.scanResults?.InvalidWebsites.slice(startIndex, endIndex);
   }
 
-  // Move to the previous page
   previousPage() {
     if (this.currentPage > 1) {
       this.currentPage--;
     }
   }
 
-  // Move to the next page
   nextPage() {
     if (this.currentPage < this.totalPages) {
       this.currentPage++;

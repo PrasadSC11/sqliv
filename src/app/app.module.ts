@@ -6,22 +6,25 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { ScannerComponent } from './scanner/scanner.component';
 import { HttpClient } from '@angular/common/http';
-import { LottieModule } from 'ngx-lottie';
+// import { LottieModule } from 'ngx-lottie';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+
 export function playerFactory() {
   return import('lottie-web');
 }
+
 @NgModule({ 
   declarations: [
     AppComponent,
     ScannerComponent
   ],
   imports: [
-    LottieModule.forRoot({ player: playerFactory }),
+   
     BrowserModule,
     HttpClientModule,
     FormsModule,
-    NgxChartsModule,
+    NgxChartsModule, 
+    // LottieModule.forRoot({ player: playerFactory }),
     ReactiveFormsModule,
     AppRoutingModule
   ],

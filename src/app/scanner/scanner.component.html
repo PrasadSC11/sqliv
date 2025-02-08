@@ -1,6 +1,6 @@
 <div class="container">
     <h1>SQL Injection Vulnerability Scanner</h1>
-    
+
     <form (submit)="onSubmit($event)">
         <div class="form-group">
             <label for="targetUrl">Enter the Target URL:</label>
@@ -10,13 +10,9 @@
         <button type="submit" class="btn btn-primary" [disabled]="!targetUrl || isLoading">
             Start Scan
         </button>
-        <div id="animationContainer"></div>
-        <!-- <ng-lottie height="auto" [options]="options"></ng-lottie> -->
     </form>
 
     <h3 *ngIf="invalid" style="color: red;">Invalid URL</h3>
-
-    <!-- Scanning Status Messages -->
     <div *ngIf="scanStatus" class="col-md-6 text-center mt-4">
         <p [ngClass]="{
             'text-success': scanStatus === 'Scanning started...' || scanStatus === 'Scan completed!',
@@ -25,10 +21,7 @@
             <strong>{{ scanStatus }}</strong>
         </p>
     </div>
-
-    <!-- Results Section -->
     <div *ngIf="scanResults && !isLoading" class="row mt-4">
-        <!-- Left Column: Scan Results Table -->
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header">
@@ -63,6 +56,10 @@
                                 <td>Tautology attack responses (G)</td>
                                 <td>{{ scanResults?.['Tautology attack detected (G)'] }}</td>
                             </tr>
+                            <tr>
+                                <td>Educational Websites</td>
+                                <td>{{ scanResults?.['Educational URLs Found'] || 0 }}</td>
+                            </tr>
                         </tbody>
                     </table>
                     <button class="btn btn-success mt-3" (click)="exportToExcel()">
@@ -72,15 +69,14 @@
             </div>
         </div>
 
-        <!-- Right Column: Card Container for Vulnerability Pie Chart -->
         <div class="col-md-6">
             <div class="card">
                 <div class="card-header">
                     <h3 class="card-title">Vulnerability Analysis</h3>
                 </div>
                 <div class="card-body text-center">
-                    <ngx-charts-pie-chart [view]="[600, 300]" [results]="vulnerabilityChartData" [doughnut]="true"
-                        [gradient]="true" [legend]="true" [scheme]="colorScheme">
+                    <ngx-charts-pie-chart [view]="[450, 320]" [results]="vulnerabilityChartData" [doughnut]="true"
+                        [gradient]="true" [labels]="true" [scheme]="colorScheme">
                     </ngx-charts-pie-chart>
                 </div>
             </div>
