@@ -1,80 +1,98 @@
-<div class="container">
-    <h1>SQL Injection Vulnerability Scanner</h1>
+<div class="container my-5">
+    <div class="card p-4 shadow-lg border-0 rounded-lg">
+        <img src="assets/sql_injection_banner.jpg" class="img-fluid rounded" alt="SQL Injection" />
 
-    <form (submit)="onSubmit($event)">
-        <div class="form-group">
-            <label for="targetUrl">Enter the Target URL:</label>
-            <input type="url" id="targetUrl" class="form-control" [(ngModel)]="targetUrl" name="targetUrl"
-                placeholder="https://example.com" required />
-        </div>
-        <button type="submit" class="btn btn-primary" [disabled]="!targetUrl || isLoading">
-            Start Scan
-        </button>
-    </form>
+        <!-- <h2 class="text-center mt-3 text-danger fw-bold">SQL Injection Vulnerability Scanner</h2> -->
 
-    <h3 *ngIf="invalid" style="color: red;">Invalid URL</h3>
-    <div *ngIf="scanStatus" class="col-md-6 text-center mt-4">
-        <p [ngClass]="{
-            'text-success': scanStatus === 'Scanning started...' || scanStatus === 'Scan completed!',
-            'text-warning': scanStatus === 'Scanning is about to finish...'
+        <form (submit)="onSubmit($event)" class="mt-4">
+            <div class="input-group">
+                <input type="url" id="targetUrl" class="form-control form-control-lg border-danger shadow-sm"
+                    [(ngModel)]="targetUrl" name="targetUrl" placeholder="Enter target URL (e.g., https://example.com)"
+                    required />
+                <button type="submit" class="btn btn-danger btn-lg" [disabled]="!targetUrl || isLoading">
+                    <i class="fas fa-search"></i> Scan Now
+                </button>
+            </div>
+        </form>
+
+        <div *ngIf="scanStatus" class="alert text-center mt-3 fw-bold" [ngClass]="{
+            'alert-success': scanStatus === 'Scan completed!' || scanStatus==='Injection handeled by server',
+            'alert-warning': scanStatus === 'Scanning is in process...' || scanStatus === 'Entered URL contains educational material and may have keyword of SQLIV',
+            'alert-danger': scanStatus === 'Scan failed!.. Invalid URL or Request handled by host server' || scanStatus === 'Request blocked by host server' || scanStatus ==='Unable to extract urls'
         }">
-            <strong>{{ scanStatus }}</strong>
-        </p>
+            {{ scanStatus }}
+        </div>
+
     </div>
-    <div *ngIf="scanResults && !isLoading" class="row mt-4">
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">Scan Results</h3>
+    <div class="d-flex justify-content-center align-items-center mt-5" *ngIf="isLoading">
+        <app-lottie-animation></app-lottie-animation>
+    </div>
+
+    <div *ngIf="scanResults && !isLoading" class="row mt-5 g-4">
+        <div class="col-lg-6">
+            <div class="card shadow border-0">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0">Scan Results</h4>
                 </div>
                 <div class="card-body">
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>Category</th>
-                                <th>Count</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Total Crawled URLs (Database A)</td>
-                                <td>{{ scanResults?.['Total Crawled URLs (Database A)'] }}</td>
-                            </tr>
-                            <tr>
-                                <td>Total Filtered URLs (Database B)</td>
-                                <td>{{ scanResults?.['Total Filtered URLs (Database B)'] }}</td>
-                            </tr>
-                            <tr>
-                                <td>Error-based attack responses (D)</td>
-                                <td>{{ scanResults?.['Error-based attack detected (D)'] }}</td>
-                            </tr>
-                            <tr>
-                                <td>Valid/Invalid SQLIA responses (E)</td>
-                                <td>{{ scanResults?.['Valid/Invalid SQLIA detected (E)'] }}</td>
-                            </tr>
-                            <tr>
-                                <td>Tautology attack responses (G)</td>
-                                <td>{{ scanResults?.['Tautology attack detected (G)'] }}</td>
-                            </tr>
-                            <tr>
-                                <td>Educational Websites</td>
-                                <td>{{ scanResults?.['Educational URLs Found'] || 0 }}</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                    <button class="btn btn-success mt-3" (click)="exportToExcel()">
-                        Export Safe URLs to Excel
+                    <ul class="list-group">
+                        <li class="list-group-item d-flex justify-content-between py-2">
+                            <span>Total Crawled URLs</span>
+                            <span class="fw-bold">{{ scanResults?.['Total Crawled URLs (Database A)'] }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between py-2">
+                            <span>Filtered URLs</span>
+                            <span class="fw-bold">{{ scanResults?.['Total Filtered URLs (Database B)'] }}</span>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between py-2">
+                            <span>Injection handeled by host</span>
+                            <span class="fw-bold">{{ scanResults?.['Injection handeled by host'] }}</span>
+                        </li>
+
+                        <li class="list-group-item d-flex justify-content-between py-2">
+                            <span>Error-based SQLIA</span>
+                            <span class="fw-bold">{{ scanResults?.['Error-based attack detected (D)'] }}</span>
+                        </li>
+
+                        <li class="list-group-item d-flex justify-content-between py-2">
+                            <span>Valid/Invalid SQLIA</span>
+                            <span class="fw-bold">{{ scanResults?.['Valid/Invalid SQLIA detected (E)'] || 0 }}</span>
+                        </li>
+
+                        <li class="list-group-item d-flex justify-content-between py-2">
+                            <span>Tautology attack SQLIA</span>
+                            <span class="fw-bold">{{ scanResults?.['Tautology attack detected (G)'] || 0 }}</span>
+                        </li>
+
+                        <li class="list-group-item d-flex justify-content-between py-2"
+                            *ngIf="scanResults?.['Recently Vulnerable Websites'] > 0">
+                            <span>Already Found Vulnerable in Recent Scan</span>
+                            <span class="fw-bold">{{ scanResults?.['Recently Vulnerable Websites'] }}</span>
+                        </li>
+
+                        <li class="list-group-item d-flex justify-content-between py-2">
+                            <span>Educational Websites that can be Vulnerable</span>
+                            <span class="fw-bold">{{ scanResults?.['Educational URLs Found'] || 0 }}</span>
+                        </li>
+                    </ul>
+
+                    <button class="btn btn-primary w-100 mt-3 shadow-sm" (click)="exportToExcel()">
+                        <i class="fas fa-file-excel"></i> Export Safe URLs
+                    </button>
+
+                    <button class="btn btn-success w-100 mt-2 shadow-sm" (click)="exportToExcel1()">
+                        <i class="fas fa-file-excel"></i> Export Full Report
                     </button>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-6">
-            <div class="card">
-                <div class="card-header">
-                    <h3 class="card-title">Vulnerability Analysis</h3>
+        <div class="col-lg-6">
+            <div class="card shadow border-0">
+                <div class="card-header bg-dark text-white text-center">
+                    <h4 class="mb-0">Vulnerability Analysis</h4>
                 </div>
-                <div class="card-body text-center">
+                <div class="card-body d-flex justify-content-center">
                     <ngx-charts-pie-chart [view]="[450, 320]" [results]="vulnerabilityChartData" [doughnut]="true"
                         [gradient]="true" [labels]="true" [scheme]="colorScheme">
                     </ngx-charts-pie-chart>
@@ -83,37 +101,39 @@
         </div>
     </div>
 
-    <!-- Invalid Websites Section -->
-    <div *ngIf="scanResults && !isLoading" class="row mt-4">
-        <div class="col-md-12">
-            <h3>Invalid Websites</h3>
-            <table class="table table-bordered">
-                <thead>
-                    <tr>
-                        <th>URL</th>
-                        <th>SQLIV Type</th>
-                        <th>Remarks</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr *ngFor="let invalid of getCurrentPageData()">
-                        <td>{{ invalid.URL }}</td>
-                        <td>{{ invalid.Type }}</td>
-                        <td>{{ invalid.Remarks }}</td>
-                    </tr>
-                </tbody>
-            </table>
-
-            <!-- Pagination Controls with Icons -->
-            <div *ngIf="scanResults?.InvalidWebsites.length > pageSize" class="pagination-container">
-                <button class="btn btn-secondary" (click)="previousPage()" [disabled]="currentPage === 1">
-                    <i class="fa fa-chevron-left"></i>
-                </button>
-                <span>Page {{ currentPage }} of {{ totalPages }}</span>
-                <button class="btn btn-secondary" (click)="nextPage()" [disabled]="currentPage === totalPages">
-                    <i class="fa fa-chevron-right"></i>
-                </button>
+    <div *ngIf="scanResults?.InvalidWebsites.length" class="card shadow-lg border-0 mt-5">
+        <div class="card-header bg-danger text-white">
+            <h4>Vulnerability Websites</h4>
+        </div>
+        <div class="card-body">
+            <!-- Responsive Table Wrapper -->
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-danger">
+                        <tr>
+                            <th>URL</th>
+                            <th>Type</th>
+                            <th>Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let invalid of getCurrentPageData()">
+                            <td>{{ invalid.URL }}</td>
+                            <td>{{ invalid.Type }}</td>
+                            <td>{{ invalid.Remarks }}</td>
+                        </tr>
+                    </tbody>
+                </table>
             </div>
         </div>
-    </div>
+        <div class="card-footer d-flex justify-content-between">
+            <button class="btn btn-secondary" (click)="previousPage()" [disabled]="currentPage === 1">
+                <i class="fa fa-chevron-left"></i> Previous
+            </button>
+            <span>Page {{ currentPage }} of {{ totalPages }}</span>
+            <button class="btn btn-secondary" (click)="nextPage()" [disabled]="currentPage === totalPages">
+                Next <i class="fa fa-chevron-right"></i>
+            </button>
+        </div>
+    </div>    
 </div>

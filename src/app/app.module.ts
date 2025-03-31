@@ -8,6 +8,7 @@ import { ScannerComponent } from './scanner/scanner.component';
 import { HttpClient } from '@angular/common/http';
 // import { LottieModule } from 'ngx-lottie';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { LottieAnimationComponent } from './lottie-animation/lottie-animation.component';
 
 export function playerFactory() {
   return import('lottie-web');
@@ -16,7 +17,8 @@ export function playerFactory() {
 @NgModule({ 
   declarations: [
     AppComponent,
-    ScannerComponent
+    ScannerComponent,
+    LottieAnimationComponent
   ],
   imports: [
    
