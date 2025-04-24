@@ -50,17 +50,17 @@
                         </li>
 
                         <li class="list-group-item d-flex justify-content-between py-2">
-                            <span>Error-based SQLIA</span>
+                            <span>Error-based SQLIV</span>
                             <span class="fw-bold">{{ scanResults?.['Error-based attack detected (D)'] }}</span>
                         </li>
 
                         <li class="list-group-item d-flex justify-content-between py-2">
-                            <span>Valid/Invalid SQLIA</span>
+                            <span>Blind SQLIV</span>
                             <span class="fw-bold">{{ scanResults?.['Valid/Invalid SQLIA detected (E)'] || 0 }}</span>
                         </li>
 
                         <li class="list-group-item d-flex justify-content-between py-2">
-                            <span>Tautology attack SQLIA</span>
+                            <span>Tautology attack SQLIV</span>
                             <span class="fw-bold">{{ scanResults?.['Tautology attack detected (G)'] || 0 }}</span>
                         </li>
 
@@ -89,7 +89,7 @@
 
         <div class="col-lg-6">
             <div class="card shadow border-0">
-                <div class="card-header bg-dark text-white text-center">
+                <div class="card-header bg-success text-white">
                     <h4 class="mb-0">Vulnerability Analysis</h4>
                 </div>
                 <div class="card-body d-flex justify-content-center">
