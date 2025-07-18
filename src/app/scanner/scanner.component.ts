@@ -30,6 +30,7 @@ export class ScannerComponent {
   options: AnimationOptions = {
     path: 'assets/annimation.json',
   };
+  currentPageData: any;
 
   constructor(private http: HttpClient, private app: AppComponent) { }
 
@@ -104,6 +105,7 @@ export class ScannerComponent {
           this.updateChartData();
           this.totalPages = Math.ceil(this.scanResults.InvalidWebsites.length / this.pageSize);
           this.scanStatus = 'Scan completed!';
+          this.getCurrentPageData();
           this.isLoading = false;
         }
       });
@@ -115,7 +117,7 @@ export class ScannerComponent {
   prepareInvalidResults(data: any) {
     const invalidResults = data?.['Invalid Websites'] || [];
     console.log(invalidResults);
-    
+
     const educationalResults = data?.['Educational Websites'] || [];
     const educationalResultsCount = data?.['Educational URLs Found'] || [];
     return [
@@ -234,27 +236,27 @@ export class ScannerComponent {
   getCurrentPageData() {
     const startIndex = (this.currentPage - 1) * this.pageSize;
     const endIndex = startIndex + this.pageSize;
-    
+
     // Ensure slice() result is stored
-    const currentPageData = this.scanResults?.InvalidWebsites.slice(startIndex, endIndex);
-    
+    this.currentPageData = this.scanResults?.InvalidWebsites.slice(startIndex, endIndex);
+
     // Print to console
-    console.log("Current Page Data:", currentPageData);
-    
-    // Return the paginated data
-    return currentPageData;
-}
+    console.log("Current Page Data:", this.currentPageData);
+
+  }
 
 
   previousPage() {
     if (this.currentPage > 1) {
       this.currentPage--;
     }
+    this.getCurrentPageData();
   }
 
   nextPage() {
     if (this.currentPage < this.totalPages) {
       this.currentPage++;
     }
+    this.getCurrentPageData();
   }
 }

@@ -48,7 +48,10 @@
                             <span>Injection handeled by host</span>
                             <span class="fw-bold">{{ scanResults?.['Injection handeled by host'] }}</span>
                         </li>
-
+                        <li class="list-group-item d-flex justify-content-between py-2">
+                            <span>Possible XSS detected</span>
+                            <span class="fw-bold">{{ scanResults?.['Possible XSS detected'] }}</span>
+                        </li>
                         <li class="list-group-item d-flex justify-content-between py-2">
                             <span>Error-based SQLIV</span>
                             <span class="fw-bold">{{ scanResults?.['Error-based attack detected (D)'] }}</span>
@@ -117,7 +120,7 @@
                         </tr>
                     </thead>
                     <tbody>
-                        <tr *ngFor="let invalid of getCurrentPageData()">
+                        <tr *ngFor="let invalid of currentPageData">
                             <td>{{ invalid.URL }}</td>
                             <td>{{ invalid.Type }}</td>
                             <td>{{ invalid.Remarks }}</td>
